@@ -1,0 +1,362 @@
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl create secret generic connection-string --from-literal=DATABASE_URL=postgres://connect --dry-run=client -o yaml > secret.yaml
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> cat .\secret.yaml
+apiVersion: v1
+data:
+  DATABASE_URL: cG9zdGdyZXM6Ly9jb25uZWN0
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: connection-string
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl create configmap user --from-literal=firstname=alexandr --from-literal=lastname=belov --dry-run=client -o yaml > cm.yaml
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl apply -f secret.yaml
+secret/connection-string created
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl apply -f cm.yaml
+configmap/user created
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl exec -it nginx -- bash
+root@nginx:/# printenv
+KUBERNETES_SERVICE_PORT_HTTPS=443
+KUBERNETES_SERVICE_PORT=443
+HOSTNAME=nginx
+PWD=/
+PKG_RELEASE=1~bullseye
+HOME=/root
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+NJS_VERSION=0.7.2
+TERM=xterm
+SHLVL=1
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+KUBERNETES_SERVICE_HOST=10.96.0.1
+KUBERNETES_PORT=tcp://10.96.0.1:443
+KUBERNETES_PORT_443_TCP_PORT=443
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+NGINX_VERSION=1.21.6
+_=/usr/bin/printenv
+root@nginx:/# exit
+exit
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get pod
+NAME                       READY   STATUS    RESTARTS   AGE
+my-nginx-66966775d-fqrf5   1/1     Running   0          132m
+my-nginx-66966775d-snt6x   1/1     Running   0          134m
+nginx                      1/1     Running   0          136m
+web                        1/1     Running   0          164m
+webreplica-5z64z           1/1     Running   0          136m
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl delete pod nginx
+pod "nginx" deleted
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl apply -f pod.yaml
+pod/nginx created
+
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl apply -f deployment.yaml
+deployment.apps/web created
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get pods -o wide
+NAME                       READY   STATUS              RESTARTS   AGE    IP            NODE       NOMINATED NODE   READINESS GATES
+my-nginx-66966775d-fqrf5   1/1     Running             0          137m   172.17.0.12   minikube   <none>           <none>
+my-nginx-66966775d-snt6x   1/1     Running             0          139m   172.17.0.11   minikube   <none>           <none>
+nginx                      1/1     Running             0          4m6s   172.17.0.8    minikube   <none>           <none>
+web                        1/1     Running             0          169m   172.17.0.7    minikube   <none>           <none>
+web-6745ffd5c8-cxlsj       0/1     ContainerCreating   0          5s     <none>        minikube   <none>           <none>
+web-6745ffd5c8-q5f5j       0/1     ContainerCreating   0          5s     <none>        minikube   <none>           <none>
+web-6745ffd5c8-sxv4p       0/1     ContainerCreating   0          5s     <none>        minikube   <none>           <none>
+webreplica-5z64z           1/1     Running             0          141m   172.17.0.9    minikube   <none>           <none>
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get pods -o wide
+NAME                       READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+my-nginx-66966775d-fqrf5   1/1     Running   0          137m    172.17.0.12   minikube   <none>           <none>
+my-nginx-66966775d-snt6x   1/1     Running   0          139m    172.17.0.11   minikube   <none>           <none>
+nginx                      1/1     Running   0          4m13s   172.17.0.8    minikube   <none>           <none>
+web                        1/1     Running   0          169m    172.17.0.7    minikube   <none>           <none>
+web-6745ffd5c8-cxlsj       1/1     Running   0          12s     172.17.0.14   minikube   <none>           <none>
+web-6745ffd5c8-q5f5j       1/1     Running   0          12s     172.17.0.10   minikube   <none>           <none>
+web-6745ffd5c8-sxv4p       1/1     Running   0          12s     172.17.0.13   minikube   <none>           <none>
+webreplica-5z64z           1/1     Running   0          141m    172.17.0.9    minikube   <none>           <none>
+
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl expose deployment/web --type=ClusterIP --dry-run=client -o yaml > service_template.yaml
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl apply -f service_template.yaml
+service/web created
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get svc
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP   3h29m
+web          ClusterIP   10.102.128.33   <none>        80/TCP    11s
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> curl 10.102.128.33
+curl : Невозможно соединиться с удаленным сервером
+строка:1 знак:1
++ curl 10.102.128.33
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-WebRequest], WebException
+    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> minikube ssh
+! Executing "docker container inspect minikube --format={{.State.Status}}" took an unusually long time: 3.0411385s
+* Restarting the docker service may improve performance.
+Last login: Sun Apr 10 11:38:41 2022 from 192.168.49.1
+docker@minikube:~$ curl 10.102.128.33
+web-6745ffd5c8-q5f5j
+docker@minikube:~$
+docker@minikube:~$ curl 10.102.128.33
+web-6745ffd5c8-sxv4p
+docker@minikube:~$ curl 10.102.128.33
+web-6745ffd5c8-cxlsj
+docker@minikube:~$ curl 10.102.128.33
+web-6745ffd5c8-q5f5j
+docker@minikube:~$ exit
+logout
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl exec -it web-6745ffd5c8-q5f5j -- bash
+root@web-6745ffd5c8-q5f5j:/# curl 10.102.128.33
+web-6745ffd5c8-cxlsj
+root@web-6745ffd5c8-q5f5j:/# curl 10.102.128.33
+web-6745ffd5c8-sxv4p
+root@web-6745ffd5c8-q5f5j:/# curl 10.102.128.33
+web-6745ffd5c8-cxlsj
+root@web-6745ffd5c8-q5f5j:/# curl 10.102.128.33
+web-6745ffd5c8-sxv4p
+root@web-6745ffd5c8-q5f5j:/#
+
+
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get service
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP        3h40m
+web          ClusterIP   10.102.128.33   <none>        80/TCP         11m
+web-np       NodePort    10.107.91.71    <none>        80:31166/TCP   2m31s
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl exec -it web-6745ffd5c8-q5f5j -- bash
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-cxlsj
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-sxv4p
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-cxlsj
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-cxlsj
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-sxv4p
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+^[[Aweb-6745ffd5c8-sxv4p
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-cxlsj
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2
+curl: (7) Failed to connect to 192.168.49.2 port 80: Connection refused
+root@web-6745ffd5c8-q5f5j:/# curl 192.168.49.2:31166
+web-6745ffd5c8-sxv4p
+root@web-6745ffd5c8-q5f5j:/# exit
+exit
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> minikube ssh
+! Executing "docker container inspect minikube --format={{.State.Status}}" took an unusually long time: 3.0666094s
+* Restarting the docker service may improve performance.
+Last login: Sun Apr 10 11:42:21 2022 from 192.168.49.1
+docker@minikube:~$ curl 192.168.49.2:31166
+web-6745ffd5c8-sxv4p
+docker@minikube:~$ exit
+logout
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get pods -n ingress-nginx
+NAME                                       READY   STATUS      RESTARTS   AGE
+ingress-nginx-admission-create-f775l       0/1     Completed   0          109s
+ingress-nginx-admission-patch-lwd5d        0/1     Completed   1          109s
+ingress-nginx-controller-cc8496874-hnlrz   1/1     Running     0          109s
+
+
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl get pod ingress-nginx-controller-cc8496874-hnlrz -n ingress-nginx -o yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2022-04-10T11:54:46Z"
+  generateName: ingress-nginx-controller-cc8496874-
+  labels:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx
+    gcp-auth-skip-secret: "true"
+    pod-template-hash: cc8496874
+  name: ingress-nginx-controller-cc8496874-hnlrz
+  namespace: ingress-nginx
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: ingress-nginx-controller-cc8496874
+    uid: dc019e57-9b85-48b4-90a4-91cb8666c89a
+  resourceVersion: "10612"
+  uid: 1aab0ffd-1ef8-46e5-a392-e44248dc0c8f
+spec:
+  containers:
+  - args:
+    - /nginx-ingress-controller
+    - --election-id=ingress-controller-leader
+    - --controller-class=k8s.io/ingress-nginx
+    - --watch-ingress-without-class=true
+    - --configmap=$(POD_NAMESPACE)/ingress-nginx-controller
+    - --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+    - --udp-services-configmap=$(POD_NAMESPACE)/udp-services
+    - --validating-webhook=:8443
+    - --validating-webhook-certificate=/usr/local/certificates/cert
+    - --validating-webhook-key=/usr/local/certificates/key
+    env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          apiVersion: v1
+          fieldPath: metadata.namespace
+    - name: LD_PRELOAD
+      value: /usr/local/lib/libmimalloc.so
+    image: k8s.gcr.io/ingress-nginx/controller:v1.1.1@sha256:0bc88eb15f9e7f84e8e56c14fa5735aaa488b840983f87bd79b1054190e660de
+    imagePullPolicy: IfNotPresent
+    lifecycle:
+      preStop:
+        exec:
+          command:
+          - /wait-shutdown
+    livenessProbe:
+      failureThreshold: 5
+      httpGet:
+        path: /healthz
+        port: 10254
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    name: controller
+    ports:
+    - containerPort: 80
+      hostPort: 80
+      name: http
+      protocol: TCP
+    - containerPort: 443
+      hostPort: 443
+      name: https
+      protocol: TCP
+    - containerPort: 8443
+      name: webhook
+      protocol: TCP
+    readinessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: /healthz
+        port: 10254
+        scheme: HTTP
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 90Mi
+    securityContext:
+      allowPrivilegeEscalation: true
+      capabilities:
+        add:
+        - NET_BIND_SERVICE
+        drop:
+        - ALL
+      runAsUser: 101
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /usr/local/certificates/
+      name: webhook-cert
+      readOnly: true
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-lvfpb
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: minikube
+  nodeSelector:
+    kubernetes.io/os: linux
+    minikube.k8s.io/primary: "true"
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: ingress-nginx
+  serviceAccountName: ingress-nginx
+  terminationGracePeriodSeconds: 0
+  tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Equal
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: webhook-cert
+    secret:
+      defaultMode: 420
+      secretName: ingress-nginx-admission
+  - name: kube-api-access-lvfpb
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2022-04-10T11:54:46Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2022-04-10T11:56:16Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2022-04-10T11:56:16Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2022-04-10T11:54:46Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://0a9b106afa681b7722f792610308fcd7e9cc814a75a7bf92c6ea7aeb39c88298
+    image: k8s.gcr.io/ingress-nginx/controller@sha256:0bc88eb15f9e7f84e8e56c14fa5735aaa488b840983f87bd79b1054190e660de
+    imageID: docker-pullable://k8s.gcr.io/ingress-nginx/controller@sha256:0bc88eb15f9e7f84e8e56c14fa5735aaa488b840983f87bd79b1054190e660de
+    lastState: {}
+    name: controller
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2022-04-10T11:56:00Z"
+  hostIP: 192.168.49.2
+  phase: Running
+  podIP: 172.17.0.15
+  podIPs:
+  - ip: 172.17.0.15
+  qosClass: Burstable
+  startTime: "2022-04-10T11:54:46Z"
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2>
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2>
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2>
+PS C:\Users\Festus\Documents\EPAM\k8s\k8shw\lab2> kubectl apply -f ingress.yaml
+ingress.networking.k8s.io/ingress-web created
