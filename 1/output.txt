@@ -1,0 +1,133 @@
+PS C:\Users\Festus> minikube start
+* minikube v1.25.2 на Microsoft Windows 10 Pro 10.0.19043 Build 19043
+* Automatically selected the docker driver. Other choices: virtualbox, ssh
+* Запускается control plane узел minikube в кластере minikube
+* Скачивается базовый образ ...
+* Creating docker container (CPUs=2, Memory=4000MB) ...- E0410 11:09:04.107750   10708 kic.go:267] icacls failed applying permissions - err - [%!s(<nil>)], output - [��ࠡ�⠭��� 䠩�: C:\Users\Festus\.minikube\machines\minikube\id_rsa
+�ᯥ譮 ��ࠡ�⠭� 1 䠩���; �� 㤠���� ��ࠡ����� 0 䠩���]
+
+* Подготавливается Kubernetes v1.23.3 на Docker 20.10.12 ...
+  - kubelet.housekeeping-interval=5m
+  - Generating certificates and keys ...
+  - Booting up control plane ...
+  - Configuring RBAC rules ...
+* Компоненты Kubernetes проверяются ...
+! Executing "docker container inspect minikube --format={{.State.Status}}" took an unusually long time: 2.9110125s
+* Restarting the docker service may improve performance.
+  - Используется образ gcr.io/k8s-minikube/storage-provisioner:v5
+* Включенные дополнения: storage-provisioner, default-storageclass
+* Готово! kubectl настроен для использования кластера "minikube" и "default" пространства имён по умолчанию
+PS C:\Users\Festus> kubectl cluster-info
+Kubernetes control plane is running at https://127.0.0.1:55725
+CoreDNS is running at https://127.0.0.1:55725/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+PS C:\Users\Festus> kubectl get nodes
+NAME       STATUS   ROLES                  AGE    VERSION
+minikube   Ready    control-plane,master   103s   v1.23.3
+PS C:\Users\Festus> kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml
+namespace/kubernetes-dashboard created
+serviceaccount/kubernetes-dashboard created
+service/kubernetes-dashboard created
+secret/kubernetes-dashboard-certs created
+secret/kubernetes-dashboard-csrf created
+secret/kubernetes-dashboard-key-holder created
+configmap/kubernetes-dashboard-settings created
+role.rbac.authorization.k8s.io/kubernetes-dashboard created
+clusterrole.rbac.authorization.k8s.io/kubernetes-dashboard created
+rolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
+clusterrolebinding.rbac.authorization.k8s.io/kubernetes-dashboard created
+deployment.apps/kubernetes-dashboard created
+service/dashboard-metrics-scraper created
+Warning: spec.template.metadata.annotations[seccomp.security.alpha.kubernetes.io/pod]: deprecated since v1.19, non-functional in v1.25+; use the "seccompProfile" field instead
+deployment.apps/dashboard-metrics-scraper created
+PS C:\Users\Festus> kubectl get pod -n kubernetes-dashboard
+NAME                                         READY   STATUS              RESTARTS   AGE
+dashboard-metrics-scraper-577dc49767-sb2t6   0/1     ContainerCreating   0          13s
+kubernetes-dashboard-78f9d9744f-z9vqv        1/1     Running             0          13s
+PS C:\Users\Festus> kubectl get nodes
+NAME       STATUS   ROLES                  AGE     VERSION
+minikube   Ready    control-plane,master   2m57s   v1.23.3
+PS C:\Users\Festus> kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+serviceaccount/metrics-server created
+clusterrole.rbac.authorization.k8s.io/system:aggregated-metrics-reader created
+clusterrole.rbac.authorization.k8s.io/system:metrics-server created
+rolebinding.rbac.authorization.k8s.io/metrics-server-auth-reader created
+clusterrolebinding.rbac.authorization.k8s.io/metrics-server:system:auth-delegator created
+clusterrolebinding.rbac.authorization.k8s.io/system:metrics-server created
+service/metrics-server created
+deployment.apps/metrics-server created
+apiservice.apiregistration.k8s.io/v1beta1.metrics.k8s.io created
+PS C:\Users\Festus> kubectl edit -n kube-system deployment metrics-server
+deployment.apps/metrics-server edited
+PS C:\Users\Festus> kubectl describe sa -n kube-system default
+Name:                default
+Namespace:           kube-system
+Labels:              <none>
+Annotations:         <none>
+Image pull secrets:  <none>
+Mountable secrets:   default-token-kn7r8
+Tokens:              default-token-kn7r8
+Events:              <none>
+PS C:\Users\Festus> kubectl get secrets -n kube-system
+NAME                                             TYPE                                  DATA   AGE
+attachdetach-controller-token-kmhcn              kubernetes.io/service-account-token   3      4m54s
+bootstrap-signer-token-7rlw4                     kubernetes.io/service-account-token   3      4m42s
+bootstrap-token-l6m5h3                           bootstrap.kubernetes.io/token         6      4m53s
+certificate-controller-token-97x68               kubernetes.io/service-account-token   3      4m54s
+clusterrole-aggregation-controller-token-xzs5l   kubernetes.io/service-account-token   3      4m54s
+coredns-token-w74vq                              kubernetes.io/service-account-token   3      4m53s
+cronjob-controller-token-cwrg7                   kubernetes.io/service-account-token   3      4m54s
+daemon-set-controller-token-cjl77                kubernetes.io/service-account-token   3      4m54s
+default-token-kn7r8                              kubernetes.io/service-account-token   3      4m40s
+deployment-controller-token-jh69x                kubernetes.io/service-account-token   3      4m43s
+disruption-controller-token-krnmw                kubernetes.io/service-account-token   3      4m54s
+endpoint-controller-token-4klmj                  kubernetes.io/service-account-token   3      4m42s
+endpointslice-controller-token-sqs4l             kubernetes.io/service-account-token   3      4m54s
+endpointslicemirroring-controller-token-7b254    kubernetes.io/service-account-token   3      4m53s
+ephemeral-volume-controller-token-qjrss          kubernetes.io/service-account-token   3      4m53s
+expand-controller-token-c2vmw                    kubernetes.io/service-account-token   3      4m42s
+generic-garbage-collector-token-xzvc4            kubernetes.io/service-account-token   3      4m43s
+horizontal-pod-autoscaler-token-vw5gn            kubernetes.io/service-account-token   3      4m41s
+job-controller-token-m2f5k                       kubernetes.io/service-account-token   3      4m54s
+kube-proxy-token-d7zn8                           kubernetes.io/service-account-token   3      4m53s
+metrics-server-token-877fl                       kubernetes.io/service-account-token   3      97s
+namespace-controller-token-dpxcj                 kubernetes.io/service-account-token   3      4m53s
+node-controller-token-m6dqr                      kubernetes.io/service-account-token   3      4m54s
+persistent-volume-binder-token-2nb2d             kubernetes.io/service-account-token   3      4m43s
+pod-garbage-collector-token-djsrf                kubernetes.io/service-account-token   3      4m43s
+pv-protection-controller-token-7w6h5             kubernetes.io/service-account-token   3      4m42s
+pvc-protection-controller-token-nwg6b            kubernetes.io/service-account-token   3      4m43s
+replicaset-controller-token-jkf9c                kubernetes.io/service-account-token   3      4m54s
+replication-controller-token-v67v5               kubernetes.io/service-account-token   3      4m41s
+resourcequota-controller-token-wh6kg             kubernetes.io/service-account-token   3      4m43s
+root-ca-cert-publisher-token-bs7m5               kubernetes.io/service-account-token   3      4m54s
+service-account-controller-token-2pf7c           kubernetes.io/service-account-token   3      4m54s
+service-controller-token-6h5nf                   kubernetes.io/service-account-token   3      4m43s
+statefulset-controller-token-x59px               kubernetes.io/service-account-token   3      4m42s
+storage-provisioner-token-mpvfc                  kubernetes.io/service-account-token   3      4m45s
+token-cleaner-token-v9sht                        kubernetes.io/service-account-token   3      4m43s
+ttl-after-finished-controller-token-9b27t        kubernetes.io/service-account-token   3      4m42s
+ttl-controller-token-rl9gp                       kubernetes.io/service-account-token   3      4m43s
+PS C:\Users\Festus> #kubectl get secrets -n kube-system token_name_from_first_command -o yaml
+PS C:\Users\Festus> kubectl get secrets -n kube-system default-token-kn7r8 -o yaml
+apiVersion: v1
+data:
+  ca.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCakNDQWU2Z0F3SUJBZ0lCQVRBTkJna3Foa2lHOXcwQkFRc0ZBREFWTVJNd0VRWURWUVFERXdwdGFXNXAKYTNWaVpVTkJNQjRYRFRJeU1ETXlNekEwTURZME5sb1hEVE15TURNeU1UQTBNRFkwTmxvd0ZURVRNQkVHQTFVRQpBeE1LYldsdWFXdDFZbVZEUVRDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTWZTCkNPcnFOaU42MUsxRmRDdjFISmU5bUorLy9SZWdUOC9lUG0vaVdBQUU0bkRlc1VZdlEzTS9XTmZOdTVzU1hMejUKcEZDK3Iwb1BidW1vK0hMb0FkdXhOOVJ4a1JQN1Y0OXhvODdrbVlXRzRHaGUwV0gvZnhwZlVHV0lKMGptbU4rQwpGcVpCWXJ2VG5xenZFaS9CUUVUSVRXUXp4czZ3b2Jtbm0xeWZEVDU5YkxraFhBS3RDby80UFhjTm1OWWNLQ2hTCmlLY1NONjNSVDM0aWhjSzVvbkw4ajJLL2kwYk1KbXdvd3RXTmZ3UytxcFVrN01CVjFyaU8ybmtUNmpxZ0dGdlgKSkJCUFY4RTlMbmxpNEtWTmRsSlBMY3k0SW9uVEd6VlR4YnV4RExqQmZCalBwSzZ0YmJqbU00ZTArZEVycWlDSQpVbDhPQkFERFkyeGUwVFJTMXBrQ0F3RUFBYU5oTUY4d0RnWURWUjBQQVFIL0JBUURBZ0trTUIwR0ExVWRKUVFXCk1CUUdDQ3NHQVFVRkJ3TUNCZ2dyQmdFRkJRY0RBVEFQQmdOVkhSTUJBZjhFQlRBREFRSC9NQjBHQTFVZERnUVcKQkJRQit6Yk1kbU92SXlpWEZuM05ETHdGdkNQbG9EQU5CZ2txaGtpRzl3MEJBUXNGQUFPQ0FRRUFmS3JzR21GcApLN2creGZhSC9qWDNoSElteDJCYkhFVStqbzVHVmJscWViR3B2QVlaeFBXUkJhQ2E1Q2h5Y3d0T29Yd1MzSWREClYxaUNpczVkeEd4eFNXdS9ydjdjVURaQlVDTzdRTXhvV1VHL04wWVc3VGwrR3ZTUU5vUlVrcUNuK3RNekw5U3QKbDRoY2pyeSs2UGtOTjNTRm1iWlpObC9xbnl2UkNNTzRveTVLbXJYQ0JSWVZoMVFlaGxxQmcyUFBDQ2MwRUlpdAordVgxZERwaFJuY01EOHJJeXd0cHdObjErVlN4VHU1eXhRZDN2aUM2UkM4Z25JdEdoT1BwaFo2aGtkVHMrK1hBCjY3Sk5sWk1COGEzaXBLOGNBTkFYUWxUSmNPd2d4Rnl4UUVkMUVLZ3NOOHc1cHZ0eXVHaDBpMnF3YmVLU2cwUmUKOWpIcWNXdjFzTkpKekE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+  namespace: a3ViZS1zeXN0ZW0=
+  token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklrRlpUVGhTTWtOQ1FrUnBNSHB0VURaTmNHNXlVRkpVTjJONGQzUndhbU52TlRaeFdqZEdTMkZqTkdjaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpyZFdKbExYTjVjM1JsYlNJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZqY21WMExtNWhiV1VpT2lKa1pXWmhkV3gwTFhSdmEyVnVMV3R1TjNJNElpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WlhKMmFXTmxMV0ZqWTI5MWJuUXVibUZ0WlNJNkltUmxabUYxYkhRaUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNTFhV1FpT2lJeFpXWmlZVFkwWWkwME56WmlMVFJrTkRVdE9USm1aQzAzTnpBME5tVXdNVGN6TVRFaUxDSnpkV0lpT2lKemVYTjBaVzA2YzJWeWRtbGpaV0ZqWTI5MWJuUTZhM1ZpWlMxemVYTjBaVzA2WkdWbVlYVnNkQ0o5LkdtM3ZHMWhqbjNhU3FHQ09oUS11c0VKRU1QYWN0S2c3NXlZOVdzSDA0bEpYR1kxQTRvQXZoc01MTUJIaURpbFhYNzBILWtSeDRxZ3F2aWRLLWdVVUJXNFVuU0R1Z1dJWldVUmZLdWNMTjRsaUl5QVBTcUFNYndIdzBCOWRfZlY0QnZLNmNnWHdNVHhfSFd1UkpEM3pmSkhyczdUOXN0RzkycHU4cTktWUs2X2g4MnFaTmsyYlJxNG1kSkFlWlpWeXNjSXNjVHN1V3VyVnNEVTFyb2wxSFVZQ1dheFczQkI5T1ZGcjVub2hsZ3RrZVBXNlNwNmM2cHBLWlJMQW1XT2E3QWszMFVsbUladHh6cFFQX05rb0NscUlGSHFhT1N3bHdzV05zOTQwZ2liWnJ0SHU3V25PMFljUUdrUW8yNU5kQTdCWjVLSDZCdzNHMlAza3NrU2QzZw==
+kind: Secret
+metadata:
+  annotations:
+    kubernetes.io/service-account.name: default
+    kubernetes.io/service-account.uid: 1efba64b-476b-4d45-92fd-77046e017311
+  creationTimestamp: "2022-04-10T08:10:07Z"
+  name: default-token-kn7r8
+  namespace: kube-system
+  resourceVersion: "420"
+  uid: 1de61381-ea26-4165-b385-b177e410fea0
+type: kubernetes.io/service-account-token
+PS C:\Users\Festus> [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String('ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklrRlpUVGhTTWtOQ1FrUnBNSHB0VURaTmNHNXlVRkpVTjJONGQzUndhbU52TlRaeFdqZEdTMkZqTkdjaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpyZFdKbExYTjVjM1JsYlNJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZqY21WMExtNWhiV1VpT2lKa1pXWmhkV3gwTFhSdmEyVnVMV3R1TjNJNElpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WlhKMmFXTmxMV0ZqWTI5MWJuUXVibUZ0WlNJNkltUmxabUYxYkhRaUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNTFhV1FpT2lJeFpXWmlZVFkwWWkwME56WmlMVFJrTkRVdE9USm1aQzAzTnpBME5tVXdNVGN6TVRFaUxDSnpkV0lpT2lKemVYTjBaVzA2YzJWeWRtbGpaV0ZqWTI5MWJuUTZhM1ZpWlMxemVYTjBaVzA2WkdWbVlYVnNkQ0o5LkdtM3ZHMWhqbjNhU3FHQ09oUS11c0VKRU1QYWN0S2c3NXlZOVdzSDA0bEpYR1kxQTRvQXZoc01MTUJIaURpbFhYNzBILWtSeDRxZ3F2aWRLLWdVVUJXNFVuU0R1Z1dJWldVUmZLdWNMTjRsaUl5QVBTcUFNYndIdzBCOWRfZlY0QnZLNmNnWHdNVHhfSFd1UkpEM3pmSkhyczdUOXN0RzkycHU4cTktWUs2X2g4MnFaTmsyYlJxNG1kSkFlWlpWeXNjSXNjVHN1V3VyVnNEVTFyb2wxSFVZQ1dheFczQkI5T1ZGcjVub2hsZ3RrZVBXNlNwNmM2cHBLWlJMQW1XT2E3QWszMFVsbUladHh6cFFQX05rb0NscUlGSHFhT1N3bHdzV05zOTQwZ2liWnJ0SHU3V25PMFljUUdrUW8yNU5kQTdCWjVLSDZCdzNHMlAza3NrU2QzZw=='))
+eyJhbGciOiJSUzI1NiIsImtpZCI6IkFZTThSMkNCQkRpMHptUDZNcG5yUFJUN2N4d3RwamNvNTZxWjdGS2FjNGcifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkZWZhdWx0LXRva2VuLWtuN3I4Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiIxZWZiYTY0Yi00NzZiLTRkNDUtOTJmZC03NzA0NmUwMTczMTEiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCJ9.Gm3vG1hjn3aSqGCOhQ-usEJEMPactKg75yY9WsH04lJXGY1A4oAvhsMLMBHiDilXX70H-kRx4qgqvidK-gUUBW4UnSDugWIZWURfKucLN4liIyAPSqAMbwHw0B9d_fV4BvK6cgXwMTx_HWuRJD3zfJHrs7T9stG92pu8q9-YK6_h82qZNk2bRq4mdJAeZZVyscIscTsuWurVsDU1rol1HUYCWaxW3BB9OVFr5nohlgtkePW6Sp6c6ppKZRLAmWOa7Ak30UlmIZtxzpQP_NkoClqIFHqaOSwlwsWNs940gibZrtHu7WnO0YcQGkQo25NdA7BZ5KH6Bw3G2P3kskSd3g
+PS C:\Users\Festus> kubectl proxy
+Starting to serve on 127.0.0.1:8001
